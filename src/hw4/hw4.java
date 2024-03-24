@@ -132,7 +132,6 @@ public class hw4 extends Application {
 					System.out.println("Error: Write failed.");
 					e1.printStackTrace();
 				}
-            	
             	errorLabel.setText("Saved data! Patient ID: " + patientID);
                 System.out.println("- Saved data!");
         	}
@@ -193,13 +192,35 @@ public class hw4 extends Application {
         HBox saveBox = new HBox(20);
         saveBox.setAlignment(Pos.CENTER);
         Button save = new Button("Save");
+        Label errorLabel = new Label();
         save.setFont(Font.font("Verdana", 16));
         save.setMinWidth(100);
         save.setMinHeight(30);
         save.setOnAction(e -> {
-            System.out.println("- Saved data!");
+        	if(idField.getText().isEmpty() || scoreField.getText().isEmpty() || lmField.getText().isEmpty() || ladField.getText().isEmpty() || lcxField.getText().isEmpty() || rcaField.getText().isEmpty() || pdaField.getText().isEmpty()) {
+        		errorLabel.setText("Error: One or more fields are empty.");
+        	} else {
+        		FileWriter fw;
+				try {
+					fw = new FileWriter(idField.getText() + "CTResults.txt");
+	            	fw.write(scoreField.getText() + "\n");
+	            	fw.write(lmField.getText() + "\n");
+	            	fw.write(ladField.getText() + "\n");
+	            	fw.write(lcxField.getText() + "\n");
+	            	fw.write(rcaField.getText() + "\n");
+	            	fw.write(pdaField.getText() + "\n");
+	            	fw.close();
+	            	save.setDisable(true);
+	            	save.setVisible(false);
+				} catch (IOException e1) {
+					System.out.println("Error: Write failed.");
+					e1.printStackTrace();
+				}
+        		errorLabel.setText("Saved scan results!");
+        		System.out.println("- Saved scan results!");
+        	}
         });
-        saveBox.getChildren().add(save);
+        saveBox.getChildren().addAll(save, errorLabel);
 
         scanUI.getChildren().addAll(columns1, header, columns2, saveBox);
 
