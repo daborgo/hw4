@@ -1,5 +1,7 @@
 package hw4;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
@@ -10,7 +12,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -213,7 +214,6 @@ public class hw4 extends Application {
 	            	save.setDisable(true);
 	            	save.setVisible(false);
 				} catch (IOException e1) {
-					System.out.println("Error: Write failed.");
 					e1.printStackTrace();
 				}
         		errorLabel.setText("Saved scan results!");
@@ -237,13 +237,17 @@ public class hw4 extends Application {
         
         HBox titleBox = new HBox(10);
         titleBox.setAlignment(Pos.CENTER);
-        Text title = new Text("Hello <Patient Name>");
-        title.setFont(Font.font("Verdana", 14));
-        titleBox.getChildren().add(title);
+        Label idLabel = new Label("Patient ID:");
+        TextField idField = new TextField();
+        idField.setMinWidth(240);
+        Button retrieve = new Button("Retrieve");
+        Label errorLabel = new Label("");
+        titleBox.getChildren().addAll(idLabel, idField, retrieve, errorLabel);
         
         HBox scoreBox = new HBox(20);
         Label scoreLabel = new Label("The total Agatston CAC score");
-        TextArea scoreField = new TextArea();
+        TextField scoreField = new TextField();
+        scoreField.setEditable(false);
         scoreField.setEditable(false);
         scoreField.setPrefWidth(240);
         scoreField.setPrefHeight(5);
@@ -260,11 +264,42 @@ public class hw4 extends Application {
         
         VBox fields = new VBox(10);
         TextField lmField = new TextField();
+        lmField.setEditable(false);
         TextField ladField = new TextField();
+        ladField.setEditable(false);
         TextField lcxField = new TextField();
+        lcxField.setEditable(false);
         TextField rcaField = new TextField();
+        rcaField.setEditable(false);
         TextField pdaField = new TextField();
+        pdaField.setEditable(false);
         fields.getChildren().addAll(lmField, ladField, lcxField, rcaField, pdaField);
+        
+        retrieve.setOnAction(e -> {
+        	if(idField.getText().isEmpty()) {
+        		errorLabel.setText("Error: Field is empty.");
+        		return;
+        	}
+        	String name = "";
+        	try (BufferedReader reader = new BufferedReader(new FileReader(idField.getText() + "_PatientInfo.txt"))) {
+                name += reader.readLine();
+                name += " " + reader.readLine();
+            } catch (IOException e1) {
+            	errorLabel.setText("Error: Incorrect patient ID.");
+            }
+        	try (BufferedReader reader = new BufferedReader(new FileReader(idField.getText() + "CTResults.txt"))) {
+                scoreField.setText(reader.readLine());
+                lmField.setText(reader.readLine());
+                ladField.setText(reader.readLine());
+                lcxField.setText(reader.readLine());
+                rcaField.setText(reader.readLine());
+                pdaField.setText(reader.readLine());
+                titleBox.getChildren().removeAll(idLabel, idField, retrieve);
+                errorLabel.setText("Hello " + name);
+            } catch (IOException e1) {
+            	errorLabel.setText("Error: CT Scan results not accessed.");
+            }
+        });
         
         HBox columns = new HBox(20);
         columns.setPadding(new Insets(10,0,10,20));
@@ -273,7 +308,7 @@ public class hw4 extends Application {
         patientUI.getChildren().addAll(titleBox, scoreBox, columns);
         patientUI.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(patientUI, 470, 400);
+        Scene scene = new Scene(patientUI, 600, 400);
         primStage.setScene(scene);
     }
 }
